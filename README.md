@@ -1,5 +1,7 @@
 # Laravel + Next.js Starter Kit
 
+[![tests](https://github.com/aliziodev/laravel-next-starter-kit/actions/workflows/tests.yml/badge.svg)](https://github.com/aliziodev/laravel-next-starter-kit/actions/workflows/tests.yml)
+[![lint](https://github.com/aliziodev/laravel-next-starter-kit/actions/workflows/lint.yml/badge.svg)](https://github.com/aliziodev/laravel-next-starter-kit/actions/workflows/lint.yml)
 [![e2e](https://github.com/aliziodev/laravel-next-starter-kit/actions/workflows/e2e.yml/badge.svg)](https://github.com/aliziodev/laravel-next-starter-kit/actions/workflows/e2e.yml)
 [![Packagist Version](https://img.shields.io/packagist/v/aliziodev/laravel-next-starter-kit)](https://packagist.org/packages/aliziodev/laravel-next-starter-kit)
 [![Packagist Downloads](https://img.shields.io/packagist/dt/aliziodev/laravel-next-starter-kit)](https://packagist.org/packages/aliziodev/laravel-next-starter-kit)
@@ -82,7 +84,7 @@ composer run dev
 
 Open **http://localhost:3000** and register an account. The API runs on **http://localhost:8000**.
 
-> **Laravel installer prompts:** when `laravel new` asks *"run `npm install --ignore-scripts` and `npm run build`?"*, answer **no** — this kit's frontend lives in `web/` (pnpm) and is installed in step 2. A `tests.yml` warning is harmless (this kit's CI workflow is `e2e.yml`). Pick any testing framework / Laravel Boost option you like.
+> **Laravel installer prompts:** when `laravel new` asks *"run `npm install --ignore-scripts` and `npm run build`?"*, answer **no** — this kit's frontend lives in `web/` (pnpm) and is installed in step 2. A `tests.yml` warning is harmless (this kit's CI workflow is `e2e.yml`). Choose **Pest** when asked for a testing framework (this kit's backend tests use Pest); Laravel Boost is optional (dev-only AI tooling).
 >
 > The root `package.json` only delegates `dev`/`build` to `web/`, so `composer run dev` keeps working even though the installer rewrites its `dev` script to call `npm run dev`.
 
@@ -162,6 +164,8 @@ Lint & format:
 pnpm --dir web lint && pnpm --dir web format:check   # Next.js / TypeScript
 vendor/bin/pint --test                               # PHP (Laravel Pint)
 ```
+
+All three suites run in **GitHub Actions** on every push / PR — `tests.yml` (Pest, PHP 8.4/8.5), `lint.yml` (Pint + ESLint + Prettier), and `e2e.yml` (Playwright).
 
 ## Email verification
 
