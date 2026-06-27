@@ -1,5 +1,11 @@
 # Laravel + Next.js Starter Kit
 
+[![e2e](https://github.com/aliziodev/laravel-next-starter-kit/actions/workflows/e2e.yml/badge.svg)](https://github.com/aliziodev/laravel-next-starter-kit/actions/workflows/e2e.yml)
+[![Packagist Version](https://img.shields.io/packagist/v/aliziodev/laravel-next-starter-kit)](https://packagist.org/packages/aliziodev/laravel-next-starter-kit)
+[![Packagist Downloads](https://img.shields.io/packagist/dt/aliziodev/laravel-next-starter-kit)](https://packagist.org/packages/aliziodev/laravel-next-starter-kit)
+[![next-sanctum](https://img.shields.io/npm/v/next-sanctum?label=next-sanctum)](https://www.npmjs.com/package/next-sanctum)
+[![License](https://img.shields.io/packagist/l/aliziodev/laravel-next-starter-kit)](https://github.com/aliziodev/laravel-next-starter-kit/blob/main/LICENSE)
+
 A **decoupled** starter kit: a headless **Laravel** API and a separate **Next.js** (App Router) frontend, wired together with [Laravel Fortify](https://laravel.com/docs/fortify) + [Sanctum](https://laravel.com/docs/sanctum) and the [`next-sanctum`](https://www.npmjs.com/package/next-sanctum) client.
 
 It mirrors the UI and feature set of the official [laravel/react-starter-kit](https://github.com/laravel/react-starter-kit), but instead of Inertia it ships an independent SPA that talks to Laravel over a **same-origin proxy** (no CORS).
@@ -40,6 +46,10 @@ sequenceDiagram
     L-->>B: 200 authenticated — or { two_factor: true }
 ```
 
+### Auth boundaries
+
+Protected pages live in an **`(app)` route group** whose layout calls `getUser()` once and redirects guests to `/login` — the decoupled equivalent of `Route::middleware('auth')->group(...)`; auth pages live in **`(auth)`**. Only those groups mount the Sanctum provider, so public pages (e.g. the welcome page) stay provider-free. The authoritative security boundary is the API itself (`auth:sanctum`); `proxy.ts` is only an optimistic edge fast-path.
+
 ## Features
 
 - **Authentication** — login, registration, password reset, password confirmation
@@ -52,7 +62,7 @@ sequenceDiagram
 
 ## Requirements
 
-- PHP **8.3+** and Composer
+- PHP **8.4+** and Composer
 - Node **20+** and **pnpm** (`corepack enable pnpm`)
 
 ## Quick start
@@ -86,10 +96,11 @@ Open **http://localhost:3000** and register an account. The API runs on **http:/
 ├── database/
 │   └── seeders/        # DatabaseSeeder + E2eSeeder (test users)
 └── web/                # Next.js frontend (App Router, no src/)
-    ├── app/            # routes + the /api/sanctum/[...path] proxy
+    ├── app/            # root layout + (app)/ & (auth)/ route groups + /api/sanctum proxy
     ├── components/     # UI (shadcn in components/ui) + auth/settings components
+    ├── layouts/        # app shell + auth page layouts
     ├── e2e/            # Playwright tests
-    ├── lib/sanctum.ts  # next-sanctum client config
+    ├── lib/            # sanctum.ts (client config) · auth.ts (request-cached getUser)
     └── proxy.ts        # Next middleware (optimistic auth fast-path)
 ```
 
