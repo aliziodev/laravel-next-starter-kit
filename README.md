@@ -82,6 +82,10 @@ composer run dev
 
 Open **http://localhost:3000** and register an account. The API runs on **http://localhost:8000**.
 
+> **Laravel installer prompts:** when `laravel new` asks *"run `npm install --ignore-scripts` and `npm run build`?"*, answer **no** — this kit's frontend lives in `web/` (pnpm) and is installed in step 2. A `tests.yml` warning is harmless (this kit's CI workflow is `e2e.yml`). Pick any testing framework / Laravel Boost option you like.
+>
+> The root `package.json` only delegates `dev`/`build` to `web/`, so `composer run dev` keeps working even though the installer rewrites its `dev` script to call `npm run dev`.
+
 > Already have a clone? Run `composer run setup` once to copy env files, generate the app key, migrate, and install the web dependencies.
 
 ## Project structure
