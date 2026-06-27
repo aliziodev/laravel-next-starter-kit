@@ -119,6 +119,31 @@ return [
     'limiters' => [
         'login' => 'login',
         'two-factor' => 'two-factor',
+        // Inline rate limit for the passkey endpoints (6 requests/min), matching
+        // the previous laravel/passkeys `throttle:6,1` default.
+        'passkeys' => '6,1',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Passkeys (WebAuthn)
+    |--------------------------------------------------------------------------
+    |
+    | Fortify (>= 1.37) registers the passkey routes itself and overrides the
+    | laravel/passkeys config from the values below. Because this kit is
+    | decoupled, the browser runs the WebAuthn ceremony on the Next.js frontend
+    | origin, so that origin MUST be listed in "allowed_origins". The relying
+    | party ID stays the shared host (e.g. "localhost"), which covers both the
+    | SPA (:3000) and the API (:8000).
+    |
+    */
+
+    'passkeys' => [
+        'relying_party_id' => parse_url(config('app.url'), PHP_URL_HOST),
+        'allowed_origins' => array_values(array_filter([
+            env('FRONTEND_URL'),
+            config('app.url'),
+        ])),
     ],
 
     /*
@@ -158,6 +183,13 @@ return [
             // any 2FA management call reaches these routes.
             'confirmPassword' => true,
             // 'window' => 0,
+        ]),
+        // Passwordless WebAuthn sign-in + management. Fortify owns the passkey
+        // routes from 1.37 on; management (add/remove) sits behind password
+        // confirmation like 2FA above. Paired with `features.passkeys: true`
+        // in web/lib/sanctum.ts on the client.
+        Features::passkeys([
+            'confirmPassword' => true,
         ]),
     ],
 
