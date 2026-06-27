@@ -1,13 +1,24 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "aliziodev/laravel-next-starter-kit",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
+    "description": "A decoupled Laravel (API) + Next.js starter kit with Fortify + Sanctum authentication, powered by next-sanctum.",
+    "keywords": [
+        "laravel",
+        "nextjs",
+        "sanctum",
+        "fortify",
+        "starter-kit",
+        "next-sanctum",
+        "passkeys"
+    ],
     "license": "MIT",
     "require": {
         "php": "^8.3",
+        "laravel/fortify": "^1.36",
         "laravel/framework": "^13.8",
+        "laravel/passkeys": "^0.2.1",
+        "laravel/sanctum": "^4.3",
         "laravel/tinker": "^3.0"
     },
     "require-dev": {
@@ -34,17 +45,17 @@
         }
     },
     "scripts": {
-        "setup": [
-            "composer install",
-            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
-            "@php artisan key:generate",
-            "@php artisan migrate --force",
-            "npm install --ignore-scripts",
-            "npm run build"
-        ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
-            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1 --timeout=0\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,queue,logs,vite --kill-others"
+            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"pnpm --dir web dev\" --names=api,queue,web --kill-others"
+        ],
+        "setup": [
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
+            "@php artisan key:generate --ansi",
+            "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
+            "@php artisan migrate --graceful --ansi",
+            "@php -r \"file_exists('web/.env.local') || copy('web/.env.example', 'web/.env.local');\"",
+            "pnpm --dir web install"
         ],
         "test": [
             "@php artisan config:clear --ansi @no_additional_args",
@@ -58,7 +69,8 @@
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
         ],
         "post-root-package-install": [
-            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
+            "@php -r \"file_exists('web/.env.local') || copy('web/.env.example', 'web/.env.local');\""
         ],
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi",

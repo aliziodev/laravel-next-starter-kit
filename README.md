@@ -1,58 +1,162 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Laravel + Next.js Starter Kit
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A **decoupled** starter kit: a headless **Laravel** API and a separate **Next.js** (App Router) frontend, wired together with [Laravel Fortify](https://laravel.com/docs/fortify) + [Sanctum](https://laravel.com/docs/sanctum) and the [`next-sanctum`](https://www.npmjs.com/package/next-sanctum) client.
 
-## About Laravel
+It mirrors the UI and feature set of the official [laravel/react-starter-kit](https://github.com/laravel/react-starter-kit), but instead of Inertia it ships an independent SPA that talks to Laravel over a **same-origin proxy** (no CORS).
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Architecture
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
-
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```mermaid
+flowchart LR
+    subgraph client [Client]
+        B["Browser<br/>cookies · CSRF"]
+    end
+    subgraph next ["Next.js · :3000"]
+        P["Route proxy<br/>app/api/sanctum/[...path]"]
+        SC["Server Components<br/>getUser() · serverFetch()"]
+    end
+    subgraph api ["Laravel API · :8000"]
+        L["Fortify + Sanctum<br/>routes/api.php (auth:sanctum)"]
+    end
+    B -->|same-origin| P
+    P -->|"forwards cookies + Origin/Referer"| L
+    SC -->|server-to-server| L
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+The browser only ever talks to the **Next.js** origin. The route handler forwards requests to Laravel carrying the session cookie and `Origin`/`Referer`, so Sanctum treats the SPA as first-party (stateful) — no CORS. Server Components authenticate directly via `getUser()` / `serverFetch()` from `next-sanctum/server`.
 
-## Contributing
+### Login (cookie/SPA) flow
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```mermaid
+sequenceDiagram
+    participant B as Browser
+    participant N as Next.js proxy
+    participant L as Laravel (Fortify + Sanctum)
+    B->>N: GET /api/sanctum/sanctum/csrf-cookie
+    N->>L: forward (+ Origin/Referer)
+    L-->>B: Set-Cookie XSRF-TOKEN + session
+    B->>N: POST /api/sanctum/login (X-XSRF-TOKEN)
+    N->>L: forward
+    L-->>B: 200 authenticated — or { two_factor: true }
+```
 
-## Code of Conduct
+## Features
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+- **Authentication** — login, registration, password reset, password confirmation
+- **Two-factor authentication** (TOTP) — QR setup, confirmation, recovery codes, login challenge
+- **Passkeys** (WebAuthn) — passwordless sign-in + management, via [`laravel/passkeys`](https://github.com/laravel/passkeys) and `@laravel/passkeys`
+- **Email verification** — opt-in (off by default, like the official kit — see [below](#email-verification))
+- **Settings** — profile, password, appearance (light/dark/system), account deletion
+- **App shell** — sidebar/header layouts, breadcrumbs, user menu, dashboard
+- Dark mode (`next-themes`), toasts (`sonner`), shadcn/ui (Nova preset), Tailwind v4, React 19
 
-## Security Vulnerabilities
+## Requirements
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+- PHP **8.3+** and Composer
+- Node **20+** and **pnpm** (`corepack enable pnpm`)
+
+## Quick start
+
+```bash
+# 1. Scaffold the project (runs key:generate + migrate automatically)
+laravel new my-app --using=aliziodev/laravel-next-starter-kit
+cd my-app
+
+# 2. Install the frontend dependencies
+#    (web/.env.local is created from web/.env.example automatically)
+cd web && pnpm install && cd ..
+
+# 3. Run the API + queue + frontend together
+composer run dev
+```
+
+Open **http://localhost:3000** and register an account. The API runs on **http://localhost:8000**.
+
+> Already have a clone? Run `composer run setup` once to copy env files, generate the app key, migrate, and install the web dependencies.
+
+## Project structure
+
+```
+.
+├── app/                # Laravel application code (Fortify actions, controllers)
+├── routes/
+│   ├── api.php         # Sanctum-guarded API routes (/user, /account, /passkeys)
+│   └── web.php         # Headless: returns JSON at / (no Blade views)
+├── config/             # fortify.php, sanctum.php, passkeys.php, …
+├── database/
+│   └── seeders/        # DatabaseSeeder + E2eSeeder (test users)
+└── web/                # Next.js frontend (App Router, no src/)
+    ├── app/            # routes + the /api/sanctum/[...path] proxy
+    ├── components/     # UI (shadcn in components/ui) + auth/settings components
+    ├── e2e/            # Playwright tests
+    ├── lib/sanctum.ts  # next-sanctum client config
+    └── proxy.ts        # Next middleware (optimistic auth fast-path)
+```
+
+## Environment
+
+Backend (`.env`):
+
+| Variable                   | Purpose                                                              |
+| -------------------------- | ------------------------------------------------------------------- |
+| `FRONTEND_URL`             | Where email links (verify / reset) point back to (the SPA).         |
+| `SANCTUM_STATEFUL_DOMAINS` | First-party origins for cookie auth — **must** list `:3000` + `:8000`. |
+| `SESSION_DRIVER=database`  | Required for the cookie/SPA flow.                                    |
+| `SESSION_COOKIE`           | Pinned to `laravel_session` for the proxy's cookie check.           |
+
+Frontend (`web/.env.local`):
+
+| Variable                       | Purpose                                                   |
+| ------------------------------ | --------------------------------------------------------- |
+| `NEXT_PUBLIC_SANCTUM_BASE_URL` | Client base URL → the same-origin proxy (`/api/sanctum`). |
+| `SANCTUM_BASE_URL`             | Server-only upstream → the real Laravel origin.           |
+
+## Security
+
+- **No CORS:** the browser only calls the Next.js origin; the route proxy forwards to Laravel server-side. The API is never exposed cross-origin to the browser.
+- **Stateful cookie auth:** Sanctum's `statefulApi()` authenticates the SPA via an `HttpOnly` session cookie. Only origins listed in `SANCTUM_STATEFUL_DOMAINS` are treated as first-party.
+- **CSRF:** every mutating request carries the `XSRF-TOKEN` cookie as an `X-XSRF-TOKEN` header; `next-sanctum` attaches it and transparently refreshes + retries once on a 419.
+- **Password confirmation:** sensitive actions (managing passkeys, deleting the account, enabling/disabling 2FA) sit behind Fortify's password-confirmation window (`password.confirm`).
+- **Two-factor authentication:** TOTP with a required confirmation step, single-use recovery codes, and password-confirmed enable/disable.
+- **Passkeys (WebAuthn):** the relying-party ID and `allowed_origins` are pinned in `config/passkeys.php`; registration requires resident keys + user verification, and management is password-confirmed. Use **`localhost`** (not `127.0.0.1`) in development so the origin matches the relying-party ID.
+- **Rate limiting:** Fortify throttles login attempts (5/min per email + IP); passkey endpoints use `throttle:6,1`.
+- **API tokens:** Sanctum personal-access tokens are available for mobile / third-party clients via `Authorization: Bearer <token>` (the SPA itself uses cookies).
+- **Going to production:** serve both apps over **HTTPS**; set `APP_URL`, `FRONTEND_URL`, and `SANCTUM_STATEFUL_DOMAINS` to your real domains; set `SESSION_DOMAIN` (e.g. `.example.com`) for cross-subdomain cookies; set `APP_DEBUG=false`; and configure a real mailer.
+
+## Testing
+
+End-to-end (Playwright, Chromium) — drives the full stack and covers login, invalid credentials, registration, logout, the **passkey ceremony** (register + passwordless sign-in, via a CDP virtual authenticator), and **2FA** (enable + login challenge, via a computed TOTP). No real device is needed.
+
+```bash
+cd web
+pnpm exec playwright install chromium   # first time only
+pnpm test:e2e
+```
+
+Locally the suite reuses already-running dev servers; in CI it boots them itself. GitHub Actions runs it on every push / PR (`.github/workflows/e2e.yml`).
+
+Backend (Pest):
+
+```bash
+composer test
+```
+
+Lint & format:
+
+```bash
+cd web && pnpm lint && pnpm format:check   # Next.js / TypeScript
+vendor/bin/pint --test                     # PHP (Laravel Pint)
+```
+
+## Email verification
+
+Email verification is **off by default**, matching the official Laravel starter kit. To enable it:
+
+1. In `web/lib/email-verification.ts`, set `MUST_VERIFY_EMAIL = true`.
+2. In `app/Models/User.php`, uncomment the `MustVerifyEmail` import and add it to the `implements` list so Fortify sends verification emails.
+
+The verify-email pages and the resend flow ship ready to use; the flag simply gates the UI enforcement.
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+MIT.

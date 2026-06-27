@@ -1,0 +1,46 @@
+{
+    "name": "web",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "dev": "next dev",
+        "build": "next build",
+        "start": "next start",
+        "lint": "eslint",
+        "format": "prettier --write .",
+        "format:check": "prettier --check .",
+        "test:e2e": "playwright test"
+    },
+    "dependencies": {
+        "@laravel/passkeys": "^0.2.0",
+        "class-variance-authority": "^0.7.1",
+        "clsx": "^2.1.1",
+        "input-otp": "^1.4.2",
+        "lucide-react": "^1.21.0",
+        "next": "16.2.9",
+        "next-sanctum": "^0.1.0",
+        "next-themes": "^0.4.6",
+        "radix-ui": "^1.6.0",
+        "react": "19.2.4",
+        "react-dom": "19.2.4",
+        "shadcn": "^4.12.0",
+        "sonner": "^2.0.7",
+        "tailwind-merge": "^3.6.0",
+        "tw-animate-css": "^1.4.0"
+    },
+    "devDependencies": {
+        "@playwright/test": "^1.61.1",
+        "@tailwindcss/postcss": "^4",
+        "@types/node": "^20",
+        "@types/react": "^19",
+        "@types/react-dom": "^19",
+        "babel-plugin-react-compiler": "1.0.0",
+        "eslint": "^9",
+        "eslint-config-next": "16.2.9",
+        "otpauth": "^9.5.1",
+        "prettier": "^3.8.5",
+        "prettier-plugin-tailwindcss": "^0.8.0",
+        "tailwindcss": "^4",
+        "typescript": "^5"
+    }
+}
