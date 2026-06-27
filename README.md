@@ -72,9 +72,9 @@ Protected pages live in an **`(app)` route group** whose layout calls `getUser()
 laravel new my-app --using=aliziodev/laravel-next-starter-kit
 cd my-app
 
-# 2. Install the frontend dependencies
-#    (web/.env.local is created from web/.env.example automatically)
-cd web && pnpm install && cd ..
+# 2. Install the Next.js frontend (run from the my-app root;
+#    web/.env.local is created from web/.env.example automatically)
+pnpm --dir web install
 
 # 3. Run the API + queue + frontend together
 composer run dev
@@ -99,6 +99,7 @@ Open **http://localhost:3000** and register an account. The API runs on **http:/
 ├── config/             # fortify.php, sanctum.php, passkeys.php, …
 ├── database/
 │   └── seeders/        # DatabaseSeeder + E2eSeeder (test users)
+├── package.json        # root: delegates dev/build/start/lint to web/ (no deps)
 └── web/                # Next.js frontend (App Router, no src/)
     ├── app/            # root layout + (app)/ & (auth)/ route groups + /api/sanctum proxy
     ├── components/     # UI (shadcn in components/ui) + auth/settings components
@@ -143,9 +144,8 @@ Frontend (`web/.env.local`):
 End-to-end (Playwright, Chromium) — drives the full stack and covers login, invalid credentials, registration, logout, the **passkey ceremony** (register + passwordless sign-in, via a CDP virtual authenticator), and **2FA** (enable + login challenge, via a computed TOTP). No real device is needed.
 
 ```bash
-cd web
-pnpm exec playwright install chromium   # first time only
-pnpm test:e2e
+pnpm --dir web exec playwright install chromium   # first time only
+pnpm --dir web test:e2e
 ```
 
 Locally the suite reuses already-running dev servers; in CI it boots them itself. GitHub Actions runs it on every push / PR (`.github/workflows/e2e.yml`).
@@ -159,8 +159,8 @@ composer test
 Lint & format:
 
 ```bash
-cd web && pnpm lint && pnpm format:check   # Next.js / TypeScript
-vendor/bin/pint --test                     # PHP (Laravel Pint)
+pnpm --dir web lint && pnpm --dir web format:check   # Next.js / TypeScript
+vendor/bin/pint --test                               # PHP (Laravel Pint)
 ```
 
 ## Email verification
