@@ -4,7 +4,7 @@
 [![Packagist Version](https://img.shields.io/packagist/v/aliziodev/laravel-next-starter-kit)](https://packagist.org/packages/aliziodev/laravel-next-starter-kit)
 [![Packagist Downloads](https://img.shields.io/packagist/dt/aliziodev/laravel-next-starter-kit)](https://packagist.org/packages/aliziodev/laravel-next-starter-kit)
 [![next-sanctum](https://img.shields.io/npm/v/next-sanctum?label=next-sanctum)](https://www.npmjs.com/package/next-sanctum)
-[![License](https://img.shields.io/packagist/l/aliziodev/laravel-next-starter-kit)](https://github.com/aliziodev/laravel-next-starter-kit/blob/main/LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/aliziodev/laravel-next-starter-kit/blob/main/LICENSE)
 
 A **decoupled** starter kit: a headless **Laravel** API and a separate **Next.js** (App Router) frontend, wired together with [Laravel Fortify](https://laravel.com/docs/fortify) + [Sanctum](https://laravel.com/docs/sanctum) and the [`next-sanctum`](https://www.npmjs.com/package/next-sanctum) client.
 
